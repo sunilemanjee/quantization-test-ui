@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vector Quantization Search Comparison</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+</head>
+<body>
+    <div class="container-fluid">
+        <!-- Header -->
+        <div class="row bg-primary text-white py-3 mb-4">
+            <div class="col-12">
+                <h1 class="text-center mb-0">
+                    <i class="fas fa-search me-2"></i>
+                    Vector Quantization Search Comparison
+                </h1>
+                <p class="text-center mb-0 opacity-75">Compare search results with different quantization methods</p>
+            </div>
+        </div>
+
+        <!-- Search Interface -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card shadow">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0">
+                            <i class="fas fa-search me-2"></i>
+                            Search Configuration
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="quantizationSelect" class="form-label">
+                                        <strong>Quantization Type:</strong>
+                                    </label>
+                                    <select class="form-select form-select-lg" id="quantizationSelect">
+                                        <option value="int8">INT8 Quantization</option>
+                                        <option value="int4">INT4 Quantization</option>
+                                        <option value="int4_with_rescore">INT4 with Rescore</option>
+                                        <option value="bbq">BBQ Quantization</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">
+                                        <strong>Query:</strong>
+                                    </label>
+                                    <div class="form-control-plaintext">
+                                        "Luxury waterfront property with pool and garage near downtown Orlando"
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <div class="form-group">
+                                    <button type="button" class="btn btn-outline-info btn-sm" id="toggleQueryBtn" onclick="toggleQueryDisplay()">
+                                        <i class="fas fa-code me-2"></i>
+                                        Show Elasticsearch Query
+                                    </button>
+                                    <div class="query-display" id="queryDisplayContainer" style="display: none;">
+                                        <pre id="queryDisplay" class="query-code"></pre>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-12 text-center">
+                                <button type="button" class="btn btn-primary btn-lg me-2" id="compareBtn" onclick="runComparison()">
+                                    <i class="fas fa-balance-scale me-2"></i>
+                                    Run Comparison
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary btn-lg" onclick="clearResults()">
+                                    <i class="fas fa-eraser me-2"></i>
+                                    Clear Results
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading Indicator -->
+        <div class="row mb-4" id="loadingSection" style="display: none;">
+            <div class="col-12 text-center">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-2">Running comparison...</p>
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <div class="row" id="resultsSection" style="display: none;">
+
+            <!-- Summary Statistics -->
+            <div class="col-12 mb-4">
+                <div class="card shadow">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-chart-bar me-2"></i>
+                            Comparison Summary
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3 text-center">
+                                <div class="stat-card bg-success text-white">
+                                    <h3 id="perfectMatches">0</h3>
+                                    <p class="mb-0">Perfect Matches</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3 text-center">
+                                <div class="stat-card bg-warning text-dark">
+                                    <h3 id="positionMismatches">0</h3>
+                                    <p class="mb-0">Position Mismatches</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3 text-center">
+                                <div class="stat-card bg-danger text-white">
+                                    <h3 id="missingResults">0</h3>
+                                    <p class="mb-0">Missing Results</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3 text-center">
+                                <div class="stat-card bg-danger text-white">
+                                    <h3 id="extraResults">0</h3>
+                                    <p class="mb-0">Extra Results</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Comparison Results -->
+            <div class="col-12">
+                <div class="comparison-results-wrapper">
+                    <!-- Full Fidelity Results -->
+                    <div class="card shadow h-100">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0">
+                                <i class="fas fa-star me-2"></i>
+                                Full Fidelity Results
+                                <span class="badge bg-light text-dark ms-2" id="fullFidelityCount">0</span>
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="fullFidelityResults" class="results-container"></div>
+                        </div>
+                    </div>
+
+                    <!-- Quantized Results -->
+                    <div class="card shadow h-100">
+                        <div class="card-header bg-warning text-dark">
+                            <h5 class="mb-0">
+                                <i class="fas fa-compress-alt me-2"></i>
+                                <span id="quantizedTitle">Quantized Results</span>
+                                <span class="badge bg-light text-dark ms-2" id="quantizedCount">0</span>
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="quantizedResults" class="results-container"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+
+        <!-- Error Section -->
+        <div class="row mb-4" id="errorSection" style="display: none;">
+            <div class="col-12">
+                <div class="alert alert-danger" role="alert">
+                    <h5 class="alert-heading">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Error
+                    </h5>
+                    <div id="errorMessage"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
