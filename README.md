@@ -1,6 +1,6 @@
 # Vector Quantization Search Comparison Tool
 
-A Flask-based web application that demonstrates the impact of vector quantization on Elasticsearch search results. This tool allows you to compare full-fidelity vector search results with quantized versions (INT8, INT4, BBQ) and provides AI-powered analysis of the differences.
+A Flask-based web application that demonstrates the impact of vector quantization on Elasticsearch search results. This tool allows you to compare full-fidelity vector search results with quantized versions (INT8, INT4, INT4 with Rescore, BBQ) and provides visual analysis of the differences.
 
 ## Features
 
@@ -9,16 +9,16 @@ A Flask-based web application that demonstrates the impact of vector quantizatio
   - 🟢 **Green**: Perfect matches (same title and position)
   - 🟡 **Yellow**: Title matches but position differs
   - 🔴 **Red**: Missing from quantized results or extra results not in full fidelity
-- **AI Analysis**: Automated summary of quantization impact using OpenAI/Azure
+- **Summary Statistics**: Quick overview of comparison metrics
 - **Modern UI**: Responsive design with Bootstrap 5 and custom styling
 - **Real-time Statistics**: Live comparison metrics and statistics
 - **Interactive Tooltips**: Detailed information on hover
+- **Collapsible Query Display**: View actual Elasticsearch queries being executed
 
 ## Prerequisites
 
 - Python 3.8 or higher
 - Elasticsearch 9.0.3+ with vector search capabilities
-- OpenAI/Azure OpenAI API access
 - Properties index with vector embeddings
 
 ## Installation
@@ -42,11 +42,6 @@ A Flask-based web application that demonstrates the impact of vector quantizatio
    ES_URL="https://your-cluster.region.elastic.cloud:443"
    ES_API_KEY="your-elasticsearch-api-key"
    ES_INDEX=properties
-   
-   OPENAI_ENDPOINT=https://your-resource.openai.azure.com/
-   OPENAI_API_KEY=your-azure-openai-api-key
-   OPENAI_MODEL=gpt-4o-global
-   OPENAI_API_VERSION=2025-01-01-preview
    ```
 
 3. **Setup the environment** (creates virtual environment and installs dependencies):
@@ -90,24 +85,28 @@ A Flask-based web application that demonstrates the impact of vector quantizatio
    - **Local**: `http://localhost:5001` or `http://127.0.0.1:5001`
    - **Network**: `http://[your-ip-address]:5001` (accessible from other devices on the network)
 
-3. **Perform a search**:
-   - Enter your search query in the text field
-   - Select the quantization type (INT8, INT4, or BBQ)
-   - Click "Compare Search Results"
+5. **Perform a comparison**:
+   - Select the quantization type (INT8, INT4, INT4 with Rescore, or BBQ)
+   - Click "Run Comparison"
+   - View the side-by-side results with visual highlighting
 
-4. **Analyze the results**:
-   - View the side-by-side comparison
-   - Check the color-coded results
-   - Read the AI-generated analysis
-   - Review the statistics
+6. **Analyze the results**:
+   - View the summary statistics at the top
+   - Check the color-coded results in both panels
+   - Hover over results for detailed tooltips
+   - Click "Show Elasticsearch Query" to see the actual queries being executed
 
 ## How It Works
 
 ### Search Process
-1. **Full Fidelity Search**: Queries the Elasticsearch index without quantization
-2. **Quantized Search**: Queries the same index with the selected quantization method
+1. **Full Fidelity Search**: Queries the `properties` index without quantization
+2. **Quantized Search**: Queries the appropriate quantized index based on selection:
+   - INT8: `properties_int8` index
+   - INT4: `properties_int4` index
+   - INT4 with Rescore: `properties_int4` index with rescore_vector parameter
+   - BBQ: `properties_bbq` index
 3. **Comparison**: Analyzes differences in results and positions
-4. **AI Analysis**: Generates insights about the quantization impact
+4. **Visual Analysis**: Provides color-coded highlighting and summary statistics
 
 ### Result Classification
 - **Perfect Matches (Green)**: Results that appear in the same position in both searches
@@ -115,11 +114,14 @@ A Flask-based web application that demonstrates the impact of vector quantizatio
 - **Missing Results (Red)**: Results that appear in full fidelity but not in quantized
 - **Extra Results (Red)**: Results that appear in quantized but not in full fidelity
 
+### Fixed Query
+The application uses a fixed search query: "Luxury waterfront property with pool and garage near downtown Orlando"
+
 ## API Endpoints
 
 - `GET /`: Main application interface
 - `POST /search`: Perform search comparison
-  - Body: `{"query": "search text", "quantization": "int8|int4|bbq"}`
+  - Body: `{"quantization": "int8|int4|int4_with_rescore|bbq"}`
 - `GET /health`: Health check endpoint
 
 ## Security
@@ -136,13 +138,6 @@ Ensure your Elasticsearch cluster has:
 - A properties index with vector embeddings
 - Proper API key authentication
 
-### OpenAI/Azure Configuration
-The application uses Azure OpenAI for AI-powered analysis. Configure:
-- Azure OpenAI endpoint
-- API key
-- Model name (default: gpt-4o-global)
-- API version
-
 ### Network Configuration
 The application binds to `0.0.0.0:5001` by default, making it accessible from:
 - Local machine: `localhost:5001`
@@ -158,15 +153,14 @@ The application binds to `0.0.0.0:5001` by default, making it accessible from:
    - Check if your cluster is accessible
    - Ensure the properties index exists
 
-2. **OpenAI API Error**:
-   - Verify your Azure OpenAI credentials
-   - Check API quota and limits
-   - Ensure the model is available in your region
-
-3. **No Results Returned**:
+2. **No Results Returned**:
    - Verify the index contains data
    - Check if vector embeddings are properly indexed
    - Ensure the search query is appropriate
+
+3. **Missing Quantized Indices**:
+   - Ensure you have the required quantized indices: `properties_int8`, `properties_int4`, `properties_bbq`
+   - Check that the indices contain the same data as the baseline `properties` index
 
 ### Debug Mode
 Run the application in debug mode for detailed logging:
@@ -183,21 +177,24 @@ python app.py
 quantization-test-ui/
 ├── app.py                 # Main Flask application
 ├── requirements.txt       # Python dependencies
-├── variables.env         # Environment configuration
-├── README.md            # This file
+├── run.py                # Startup script
+├── setup_env.sh          # Environment setup script
+├── test_connection.py    # Connection test utility
+├── variables.env.template # Environment variables template
+├── README.md             # This file
 ├── templates/
-│   └── index.html       # Main HTML template
+│   └── index.html        # Main HTML template
 └── static/
     ├── css/
-    │   └── style.css    # Custom styles
+    │   └── style.css     # Custom styles
     └── js/
-        └── app.js       # Frontend JavaScript
+        └── app.js        # Frontend JavaScript
 ```
 
 ### Adding New Features
-1. **New Quantization Types**: Add options to the quantization selector
+1. **New Quantization Types**: Add options to the quantization selector in `app.py`
 2. **Additional Metrics**: Extend the comparison logic in `compare_results()`
-3. **Custom Analysis**: Modify the AI prompt in `generate_ai_summary()`
+3. **Custom Queries**: Modify the fixed query in `get_fixed_query()`
 
 ## Contributing
 
@@ -215,12 +212,11 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 For issues and questions:
 1. Check the troubleshooting section
-2. Review the Elasticsearch and OpenAI documentation
+2. Review the Elasticsearch documentation
 3. Open an issue in the repository
 
 ## Acknowledgments
 
 - Elasticsearch for vector search capabilities
-- OpenAI/Azure for AI analysis
 - Bootstrap for the UI framework
 - Flask for the web framework
