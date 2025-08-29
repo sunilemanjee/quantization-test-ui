@@ -78,6 +78,15 @@ def get_search_query(query_text, quantization_type=None):
                 "field": "body_content_e5",
                 "k": 10,
                 "num_candidates": 100,
+                "filter": {
+                    "geo_distance": {
+                        "distance": "25mi",
+                        "location": {
+                            "lat": 28.5383,
+                            "lon": -81.3792
+                        }
+                    }
+                },
                 "query_vector_builder": {
                     "text_embedding": {
                         "model_id": ".multilingual-e5-small-elasticsearch",
@@ -88,8 +97,8 @@ def get_search_query(query_text, quantization_type=None):
         }
     }
     
-    # Add rescore_vector parameter for int4_with_rescore
-    if quantization_type == 'int4_with_rescore':
+    # Add rescore_vector parameter for int4
+    if quantization_type == 'int4':
         search_body["query"]["knn"]["rescore_vector"] = {
             "oversample": 2.0
         }
@@ -106,8 +115,6 @@ def get_search_results(query_text, quantization_type=None):
         if quantization_type == 'int8':
             index_name = 'properties_int8'
         elif quantization_type == 'int4':
-            index_name = 'properties_int4'
-        elif quantization_type == 'int4_with_rescore':
             index_name = 'properties_int4'
         elif quantization_type == 'bbq':
             index_name = 'properties_bbq'

@@ -122,6 +122,26 @@ body {
     margin-bottom: 15px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     transition: transform 0.2s ease;
+    height: 120px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+.info-icon {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 1.2rem;
+    opacity: 0.8;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+}
+
+.info-icon:hover {
+    opacity: 1;
 }
 
 .stat-card:hover {
@@ -279,6 +299,24 @@ body {
     background-color: #333;
     border-radius: 6px;
     font-size: 0.9rem;
+    max-width: 300px;
+    text-align: left;
+}
+
+/* Info icon styling */
+.fa-info-circle {
+    cursor: help;
+    opacity: 0.8;
+    transition: opacity 0.2s ease;
+}
+
+.fa-info-circle:hover {
+    opacity: 1;
+}
+
+/* Ensure tooltips work properly */
+[data-bs-toggle="tooltip"] {
+    cursor: help;
 }
 
 /* Custom focus styles for accessibility */

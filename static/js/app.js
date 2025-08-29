@@ -14,7 +14,18 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initial title update
     updateQuantizedTitle();
+    
+    // Initialize tooltips
+    initializeTooltips();
 });
+
+// Initialize tooltips
+function initializeTooltips() {
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+}
 
 // Update quantized title when selection changes
 function updateQuantizedTitle() {
@@ -130,7 +141,6 @@ function getQuantizedIndexName() {
     switch(quantizationType) {
         case 'int8': return 'properties_int8';
         case 'int4': return 'properties_int4';
-        case 'int4_with_rescore': return 'properties_int4';
         case 'bbq': return 'properties_bbq';
         default: return 'properties_int8';
     }
@@ -142,6 +152,12 @@ function updateSummaryStatistics(comparison) {
     document.getElementById('positionMismatches').textContent = comparison.yellow_matches.length;
     document.getElementById('missingResults').textContent = comparison.red_missing.length;
     document.getElementById('extraResults').textContent = comparison.red_extra.length;
+    
+    // Calculate matches found
+    const totalFullFidelity = comparison.green_matches.length + comparison.yellow_matches.length + comparison.red_missing.length;
+    const matchesFound = comparison.green_matches.length + comparison.yellow_matches.length;
+    
+    document.getElementById('recallCount').textContent = `${matchesFound}/${totalFullFidelity}`;
 }
 
 // Toggle query display
@@ -292,6 +308,7 @@ function clearResults() {
     document.getElementById('positionMismatches').textContent = '0';
     document.getElementById('missingResults').textContent = '0';
     document.getElementById('extraResults').textContent = '0';
+    document.getElementById('recallCount').textContent = '0/0';
     
     hideError();
     currentResults = null;

@@ -39,10 +39,9 @@
                                         <strong>Quantization Type:</strong>
                                     </label>
                                     <select class="form-select form-select-lg" id="quantizationSelect">
-                                        <option value="int8">INT8 Quantization</option>
-                                        <option value="int4">INT4 Quantization</option>
-                                        <option value="int4_with_rescore">INT4 with Rescore</option>
-                                        <option value="bbq">BBQ Quantization</option>
+                                        <option value="int8">INT8</option>
+                                        <option value="int4">INT4</option>
+                                        <option value="bbq">BBQ</option>
                                     </select>
                                 </div>
                             </div>
@@ -110,29 +109,55 @@
                         </h5>
                     </div>
                     <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-3 text-center">
+                        <div class="row justify-content-center">
+                            <div class="col-md-2 text-center">
+                                <div class="stat-card bg-info text-white">
+                                    <i class="fas fa-info-circle info-icon" 
+                                       data-bs-toggle="tooltip" 
+                                       data-bs-placement="top" 
+                                       title="Number of full fidelity results that were found in quantized results (regardless of position)"></i>
+                                    <h3 id="recallCount">0/0</h3>
+                                    <p class="mb-0">Recall</p>
+                                </div>
+                            </div>
+                            <div class="col-md-2 text-center">
                                 <div class="stat-card bg-success text-white">
+                                    <i class="fas fa-info-circle info-icon" 
+                                       data-bs-toggle="tooltip" 
+                                       data-bs-placement="top" 
+                                       title="Results that appear in both searches with the same title and position"></i>
                                     <h3 id="perfectMatches">0</h3>
-                                    <p class="mb-0">Perfect Matches</p>
+                                    <p class="mb-0">Precision</p>
                                 </div>
                             </div>
-                            <div class="col-md-3 text-center">
+                            <div class="col-md-2 text-center">
                                 <div class="stat-card bg-warning text-dark">
+                                    <i class="fas fa-info-circle info-icon" 
+                                       data-bs-toggle="tooltip" 
+                                       data-bs-placement="top" 
+                                       title="Results that appear in both searches with the same title but different positions"></i>
                                     <h3 id="positionMismatches">0</h3>
-                                    <p class="mb-0">Position Mismatches</p>
+                                    <p class="mb-0">Position Shift</p>
                                 </div>
                             </div>
-                            <div class="col-md-3 text-center">
+                            <div class="col-md-2 text-center">
                                 <div class="stat-card bg-danger text-white">
+                                    <i class="fas fa-info-circle info-icon" 
+                                       data-bs-toggle="tooltip" 
+                                       data-bs-placement="top" 
+                                       title="Results that appear in full fidelity search but not in quantized search"></i>
                                     <h3 id="missingResults">0</h3>
-                                    <p class="mb-0">Missing Results</p>
+                                    <p class="mb-0">Absent Results</p>
                                 </div>
                             </div>
-                            <div class="col-md-3 text-center">
+                            <div class="col-md-2 text-center">
                                 <div class="stat-card bg-danger text-white">
+                                    <i class="fas fa-info-circle info-icon" 
+                                       data-bs-toggle="tooltip" 
+                                       data-bs-placement="top" 
+                                       title="Results that appear in quantized search but not in full fidelity search"></i>
                                     <h3 id="extraResults">0</h3>
-                                    <p class="mb-0">Extra Results</p>
+                                    <p class="mb-0">New Results</p>
                                 </div>
                             </div>
                         </div>
