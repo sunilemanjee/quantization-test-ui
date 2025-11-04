@@ -100,7 +100,7 @@ def get_search_query(query_text, quantization_type=None):
     # Add rescore_vector parameter for int4 and bbq
     if quantization_type == 'int4':
         search_body["query"]["knn"]["rescore_vector"] = {
-            "oversample": 2.0
+            "oversample": 0
         }
     elif quantization_type == 'bbq':
         search_body["query"]["knn"]["rescore_vector"] = {
